@@ -36,12 +36,11 @@ func (repo *repository) Create(ctx context.Context, params *pkgUsers.CreateParam
 	var user models.User
 	err := scanUser(row, &user)
 	if err != nil {
-		repo.log.Error(constants.DBScanError, zap.Error(err), zap.String("sql_query", createCmd),
-			zap.Any("create_params", params))
+		repo.log.Error(constants.DBScanError, zap.Error(err), zap.Any("create_params", params))
 		return models.User{}, errors.Wrap(pkgErrors.ErrDb, err.Error())
 	}
 
-	repo.log.Debug("User created", zap.Int("id", user.ID), zap.String("username", user.Username))
+	repo.log.Debug("User created", zap.Int64("id", user.ID))
 	return user, nil
 }
 
@@ -93,7 +92,7 @@ const getCmd = `
 	FROM users
 	WHERE id = $1;`
 
-func (repo *repository) Get(ctx context.Context, id int) (models.User, error) {
+func (repo *repository) Get(ctx context.Context, id int64) (models.User, error) {
 	row := repo.pool.QueryRow(ctx, getCmd, id)
 
 	var user models.User
@@ -103,8 +102,7 @@ func (repo *repository) Get(ctx context.Context, id int) (models.User, error) {
 			return models.User{}, errors.Wrap(pkgErrors.ErrUserNotFound, err.Error())
 		}
 
-		repo.log.Error(constants.DBScanError, zap.Error(err), zap.String("sql_query", getCmd),
-			zap.Int("id", id))
+		repo.log.Error(constants.DBScanError, zap.Error(err), zap.Int64("id", id))
 		return models.User{}, errors.Wrap(pkgErrors.ErrDb, err.Error())
 	}
 
@@ -193,11 +191,10 @@ const updateAvatarCmd = `
 	SET avatar = $1
 	WHERE id = $2;`
 
-func (repo *repository) UpdateAvatar(ctx context.Context, id int, avatar string) error {
+func (repo *repository) UpdateAvatar(ctx context.Context, id int64, avatar string) error {
 	result, err := repo.pool.Exec(ctx, updateAvatarCmd, avatar, id)
 	if err != nil {
-		repo.log.Error(constants.DBError, zap.Error(err), zap.String("sql", updateAvatarCmd),
-			zap.Int("id", id))
+		repo.log.Error(constants.DBError, zap.Error(err), zap.Int64("id", id))
 		return pkgErrors.ErrDb
 	}
 
@@ -206,7 +203,7 @@ func (repo *repository) UpdateAvatar(ctx context.Context, id int, avatar string)
 		return pkgErrors.ErrUserNotFound
 	}
 
-	repo.log.Debug("Avatar updated", zap.Int("id", id))
+	repo.log.Debug("Avatar updated", zap.Int64("id", id))
 	return nil
 }
 
@@ -214,11 +211,10 @@ const deleteCmd = `
 	DELETE FROM users 
 	WHERE id = $1;`
 
-func (repo *repository) Delete(ctx context.Context, id int) error {
+func (repo *repository) Delete(ctx context.Context, id int64) error {
 	result, err := repo.pool.Exec(ctx, deleteCmd, id)
 	if err != nil {
-		repo.log.Error(constants.DBError, zap.Error(err), zap.String("sql_query", deleteCmd),
-			zap.Int("id", id))
+		repo.log.Error(constants.DBError, zap.Error(err), zap.Int64("id", id))
 		return errors.Wrap(pkgErrors.ErrDb, err.Error())
 	}
 
@@ -227,7 +223,7 @@ func (repo *repository) Delete(ctx context.Context, id int) error {
 		return pkgErrors.ErrUserNotFound
 	}
 
-	repo.log.Debug("User deleted", zap.Int("id", id))
+	repo.log.Debug("User deleted", zap.Int64("id", id))
 	return nil
 }
 
@@ -236,14 +232,13 @@ const existsCmd = `
 					FROM users
 					WHERE id = $1) AS exists;`
 
-func (repo *repository) Exists(ctx context.Context, userID int) (bool, error) {
+func (repo *repository) Exists(ctx context.Context, userID int64) (bool, error) {
 	row := repo.pool.QueryRow(ctx, existsCmd, userID)
 
 	var exists bool
 	err := row.Scan(&exists)
 	if err != nil {
-		repo.log.Error(constants.DBScanError, zap.Error(err), zap.String("sql_query", existsCmd),
-			zap.Int("user_id", userID))
+		repo.log.Error(constants.DBScanError, zap.Error(err), zap.Int64("user_id", userID))
 		return false, errors.Wrap(pkgErrors.ErrDb, err.Error())
 	}
 	return exists, nil

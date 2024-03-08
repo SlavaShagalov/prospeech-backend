@@ -43,7 +43,7 @@ func (uc *usecase) SignIn(ctx context.Context, params *auth.SignInParams) (model
 		return models.User{}, "", err
 	}
 
-	uc.log.Debug("Sign In", zap.Int("user_id", user.ID))
+	uc.log.Debug("Sign In", zap.Int64("user_id", user.ID))
 	return user, authToken, nil
 }
 
@@ -77,19 +77,19 @@ func (uc *usecase) SignUp(ctx context.Context, params *auth.SignUpParams) (model
 		return models.User{}, "", err
 	}
 
-	uc.log.Debug("Sign Up", zap.Int("user_id", user.ID))
+	uc.log.Debug("Sign Up", zap.Int64("user_id", user.ID))
 	return user, authToken, nil
 }
 
-func (uc *usecase) CheckAuth(ctx context.Context, userID int, authToken string) (int, error) {
+func (uc *usecase) CheckAuth(ctx context.Context, userID int64, authToken string) (int64, error) {
 	return uc.sessionsRepo.Get(ctx, userID, authToken)
 }
 
-func (uc *usecase) Logout(ctx context.Context, userID int, authToken string) error {
+func (uc *usecase) Logout(ctx context.Context, userID int64, authToken string) error {
 	err := uc.sessionsRepo.Delete(ctx, userID, authToken)
 	if err != nil {
 		return err
 	}
-	uc.log.Debug("Logout", zap.Int("user_id", userID))
+	uc.log.Debug("Logout", zap.Int64("user_id", userID))
 	return nil
 }

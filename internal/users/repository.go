@@ -13,14 +13,14 @@ type CreateParams struct {
 }
 
 type FullUpdateParams struct {
-	ID       int
+	ID       int64
 	Username string
 	Email    string
 	Name     string
 }
 
 type PartialUpdateParams struct {
-	ID             int
+	ID             int64
 	Username       string
 	UpdateUsername bool
 	Email          string
@@ -33,14 +33,14 @@ type Repository interface {
 	Create(ctx context.Context, params *CreateParams) (models.User, error)
 
 	List(ctx context.Context) ([]models.User, error)
-	Get(ctx context.Context, id int) (models.User, error)
+	Get(ctx context.Context, id int64) (models.User, error)
 	GetByUsername(ctx context.Context, username string) (models.User, error)
 
 	FullUpdate(ctx context.Context, params *FullUpdateParams) (models.User, error)
 	PartialUpdate(ctx context.Context, params *PartialUpdateParams) (models.User, error)
-	UpdateAvatar(ctx context.Context, id int, avatar string) error
+	UpdateAvatar(ctx context.Context, id int64, avatar string) error
 
-	Delete(ctx context.Context, id int) error
+	Delete(ctx context.Context, id int64) error
 
-	Exists(ctx context.Context, id int) (bool, error)
+	Exists(ctx context.Context, id int64) (bool, error)
 }

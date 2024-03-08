@@ -24,7 +24,7 @@ type SignInRequest struct {
 // API responses
 
 type SignInResponse struct {
-	ID        int       `json:"id"`
+	ID        int64     `json:"id"`
 	Username  string    `json:"username"`
 	Email     string    `json:"email"`
 	Name      string    `json:"name"`
@@ -46,7 +46,7 @@ func newSignInResponse(user *models.User) *SignInResponse {
 }
 
 type SignUpResponse struct {
-	ID        int       `json:"id"`
+	ID        int64     `json:"id"`
 	Username  string    `json:"username"`
 	Email     string    `json:"email"`
 	Name      string    `json:"name"`
@@ -68,7 +68,7 @@ func newSignUpResponse(user *models.User) *SignUpResponse {
 }
 
 type getResponse struct {
-	ID        int       `json:"id"`
+	ID        int64     `json:"id"`
 	Username  string    `json:"username"`
 	Email     string    `json:"email"`
 	Name      string    `json:"name"`

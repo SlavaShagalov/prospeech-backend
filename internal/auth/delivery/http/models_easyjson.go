@@ -37,7 +37,7 @@ func easyjsonD2b7633eDecodeGithubComSlavaShagalovProspeechBackendInternalAuthDel
 		}
 		switch key {
 		case "id":
-			out.ID = int(in.Int())
+			out.ID = int64(in.Int64())
 		case "username":
 			out.Username = string(in.String())
 		case "email":
@@ -79,7 +79,7 @@ func easyjsonD2b7633eEncodeGithubComSlavaShagalovProspeechBackendInternalAuthDel
 	{
 		const prefix string = ",\"id\":"
 		out.RawString(prefix[1:])
-		out.Int(int(in.ID))
+		out.Int64(int64(in.ID))
 	}
 	{
 		const prefix string = ",\"username\":"
@@ -161,7 +161,7 @@ func easyjsonD2b7633eDecodeGithubComSlavaShagalovProspeechBackendInternalAuthDel
 		}
 		switch key {
 		case "id":
-			out.ID = int(in.Int())
+			out.ID = int64(in.Int64())
 		case "username":
 			out.Username = string(in.String())
 		case "email":
@@ -203,7 +203,7 @@ func easyjsonD2b7633eEncodeGithubComSlavaShagalovProspeechBackendInternalAuthDel
 	{
 		const prefix string = ",\"id\":"
 		out.RawString(prefix[1:])
-		out.Int(int(in.ID))
+		out.Int64(int64(in.ID))
 	}
 	{
 		const prefix string = ",\"username\":"
@@ -372,7 +372,7 @@ func easyjsonD2b7633eDecodeGithubComSlavaShagalovProspeechBackendInternalAuthDel
 		}
 		switch key {
 		case "id":
-			out.ID = int(in.Int())
+			out.ID = int64(in.Int64())
 		case "username":
 			out.Username = string(in.String())
 		case "email":
@@ -414,7 +414,7 @@ func easyjsonD2b7633eEncodeGithubComSlavaShagalovProspeechBackendInternalAuthDel
 	{
 		const prefix string = ",\"id\":"
 		out.RawString(prefix[1:])
-		out.Int(int(in.ID))
+		out.Int64(int64(in.ID))
 	}
 	{
 		const prefix string = ",\"username\":"

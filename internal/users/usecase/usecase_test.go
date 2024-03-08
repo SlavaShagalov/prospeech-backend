@@ -1,7 +1,7 @@
 package usecase
 
 import (
-	imgMocks "github.com/SlavaShagalov/prospeech-backend/internal/images/mocks"
+	imgMocks "github.com/SlavaShagalov/prospeech-backend/internal/files/mocks"
 	"github.com/SlavaShagalov/prospeech-backend/internal/models"
 	"github.com/SlavaShagalov/prospeech-backend/internal/pkg/config"
 	pkgErrors "github.com/SlavaShagalov/prospeech-backend/internal/pkg/errors"

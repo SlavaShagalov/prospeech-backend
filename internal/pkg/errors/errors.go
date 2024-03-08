@@ -21,20 +21,7 @@ var (
 	ErrTooLongName = errors.New(fmt.Sprintf("name must be no more than %d characters", constants.MaxNameLen))
 
 	// Workspaces
-	ErrWorkspaceNotFound = errors.New("workspace not found")
-
-	// Boards
-	ErrBoardNotFound = errors.New("board not found")
-
-	// Lists
-	ErrListNotFound     = errors.New("list not found")
-	ErrTooLongListTitle = errors.New(fmt.Sprintf("list title must be no more than %d characters",
-		constants.MaxListTitleLen))
-	ErrTooLongListDescription = errors.New(fmt.Sprintf("list description must be no more than %d characters",
-		constants.MaxListDescriptionLen))
-
-	// Cards
-	ErrCardNotFound = errors.New("card not found")
+	ErrAudioNotFound = errors.New("audio not found")
 
 	// Auth
 	ErrWrongLoginOrPassword = errors.New("wrong login or password")

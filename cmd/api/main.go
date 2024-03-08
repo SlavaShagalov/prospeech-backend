@@ -17,13 +17,16 @@ import (
 	pLog "github.com/SlavaShagalov/prospeech-backend/internal/pkg/log/zap"
 	pStorages "github.com/SlavaShagalov/prospeech-backend/internal/pkg/storages"
 
-	imagesRepository "github.com/SlavaShagalov/prospeech-backend/internal/images/repository/fs"
+	audiosRepository "github.com/SlavaShagalov/prospeech-backend/internal/audios/repository/pgx"
+	filesRepository "github.com/SlavaShagalov/prospeech-backend/internal/files/repository/s3"
 	sessionsRepository "github.com/SlavaShagalov/prospeech-backend/internal/sessions/repository/redis"
 	usersRepository "github.com/SlavaShagalov/prospeech-backend/internal/users/repository/pgx"
 
+	audiosUsecase "github.com/SlavaShagalov/prospeech-backend/internal/audios/usecase"
 	authUsecase "github.com/SlavaShagalov/prospeech-backend/internal/auth/usecase"
 	usersUsecase "github.com/SlavaShagalov/prospeech-backend/internal/users/usecase"
 
+	audiosDel "github.com/SlavaShagalov/prospeech-backend/internal/audios/delivery/http"
 	authDel "github.com/SlavaShagalov/prospeech-backend/internal/auth/delivery/http"
 	usersDel "github.com/SlavaShagalov/prospeech-backend/internal/users/delivery/http"
 )
@@ -87,17 +90,25 @@ func main() {
 		logger.Info("Redis client closed")
 	}()
 
+	// ===== S3 =====
+	s3Client, err := pStorages.NewS3(logger)
+	if err != nil {
+		os.Exit(1)
+	}
+
 	// ===== Hasher =====
 	hasher := pHasher.New()
 
 	// ===== Repositories =====
 	usersRepo := usersRepository.New(pgxPool, logger)
-	imagesRepo := imagesRepository.New(logger)
+	filesRepo := filesRepository.New(s3Client, logger)
+	audiosRepo := audiosRepository.New(pgxPool, logger)
 	sessionsRepo := sessionsRepository.New(redisClient, logger)
 
 	// ===== Usecases =====
 	authUC := authUsecase.New(usersRepo, sessionsRepo, hasher, logger)
-	usersUC := usersUsecase.New(usersRepo, imagesRepo)
+	usersUC := usersUsecase.New(usersRepo, filesRepo)
+	audiosUC := audiosUsecase.New(audiosRepo, filesRepo)
 
 	// ===== Middleware =====
 	checkAuth := mw.NewCheckAuth(authUC, logger)
@@ -109,6 +120,7 @@ func main() {
 	// ===== Delivery =====
 	authDel.RegisterHandlers(router, authUC, usersUC, logger, checkAuth)
 	usersDel.RegisterHandlers(router, usersUC, logger, checkAuth)
+	audiosDel.RegisterHandlers(router, audiosUC, logger, checkAuth)
 
 	// ===== Router =====
 	server := http.Server{

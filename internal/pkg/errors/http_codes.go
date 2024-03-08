@@ -14,19 +14,8 @@ var httpCodes = map[error]int{
 	ErrEmptyName:         http.StatusBadRequest,
 	ErrTooLongName:       http.StatusBadRequest,
 
-	// Workspaces
-	ErrWorkspaceNotFound: http.StatusNotFound,
-
-	// Boards
-	ErrBoardNotFound: http.StatusNotFound,
-
-	// Lists
-	ErrListNotFound:           http.StatusNotFound,
-	ErrTooLongListTitle:       http.StatusBadRequest,
-	ErrTooLongListDescription: http.StatusBadRequest,
-
-	// Cards
-	ErrCardNotFound: http.StatusNotFound,
+	// Audios
+	ErrAudioNotFound: http.StatusNotFound,
 
 	// Auth
 	ErrWrongLoginOrPassword: http.StatusBadRequest,

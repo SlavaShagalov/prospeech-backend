@@ -1,7 +1,7 @@
 package fs
 
 import (
-	pImages "github.com/SlavaShagalov/prospeech-backend/internal/images"
+	pImages "github.com/SlavaShagalov/prospeech-backend/internal/files"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 
 	"go.uber.org/zap"

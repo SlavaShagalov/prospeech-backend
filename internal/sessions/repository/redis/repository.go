@@ -25,24 +25,24 @@ func New(rdb *redis.Client, log *zap.Logger) pkgSessions.Repository {
 	}
 }
 
-func (repo *repository) Create(ctx context.Context, userID int) (string, error) {
-	authToken := strconv.Itoa(userID) + "$" + uuid.New().String()
+func (repo *repository) Create(ctx context.Context, userID int64) (string, error) {
+	authToken := strconv.FormatInt(userID, 10) + "$" + uuid.New().String()
 
-	err := repo.rdb.HSet(ctx, strconv.Itoa(userID), authToken, []byte{}).Err()
+	err := repo.rdb.HSet(ctx, strconv.FormatInt(userID, 10), authToken, []byte{}).Err()
 	if err != nil {
-		repo.log.Error("Failed to set key-value in Redis", zap.Error(err), zap.Int("user_id", userID),
+		repo.log.Error("Failed to set key-value in Redis", zap.Error(err), zap.Int64("user_id", userID),
 			zap.String("auth_token", authToken))
-		repo.rdb.Expire(ctx, strconv.Itoa(userID), 5*time.Hour)
+		repo.rdb.Expire(ctx, strconv.FormatInt(userID, 10), 5*time.Hour)
 		return "", err
 	}
 
 	return authToken, nil
 }
 
-func (repo *repository) Get(ctx context.Context, userID int, authToken string) (int, error) {
-	err := repo.rdb.HGet(ctx, strconv.Itoa(userID), authToken).Err()
+func (repo *repository) Get(ctx context.Context, userID int64, authToken string) (int64, error) {
+	err := repo.rdb.HGet(ctx, strconv.FormatInt(userID, 10), authToken).Err()
 	if err != nil {
-		repo.log.Info("Failed to get session", zap.Error(err), zap.Int("user_id", userID),
+		repo.log.Info("Failed to get session", zap.Error(err), zap.Int64("user_id", userID),
 			zap.String("token", authToken))
 		return 0, pkgErrors.ErrSessionNotFound
 	}
@@ -50,13 +50,13 @@ func (repo *repository) Get(ctx context.Context, userID int, authToken string) (
 	return userID, nil
 }
 
-func (repo *repository) Delete(ctx context.Context, userID int, authToken string) error {
-	if err := repo.rdb.HGet(ctx, strconv.Itoa(userID), authToken).Err(); err != nil {
-		repo.log.Info("Failed to delete session", zap.Error(err), zap.Int("user_id", userID),
+func (repo *repository) Delete(ctx context.Context, userID int64, authToken string) error {
+	if err := repo.rdb.HGet(ctx, strconv.FormatInt(userID, 10), authToken).Err(); err != nil {
+		repo.log.Info("Failed to delete session", zap.Error(err), zap.Int64("user_id", userID),
 			zap.String("token", authToken))
 		return pkgErrors.ErrSessionNotFound
 	}
 
-	repo.rdb.HDel(ctx, strconv.Itoa(userID), authToken)
+	repo.rdb.HDel(ctx, strconv.FormatInt(userID, 10), authToken)
 	return nil
 }

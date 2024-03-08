@@ -55,7 +55,7 @@ func RegisterHandlers(mux *mux.Router, uc pUsers.Usecase, log *zap.Logger, check
 //	@Security		cookieAuth
 func (del *delivery) get(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	userID, err := strconv.Atoi(vars["id"])
+	userID, err := strconv.ParseInt(vars["id"], 10, 64)
 	if err != nil {
 		pHTTP.HandleError(w, r, err)
 		return
@@ -92,7 +92,7 @@ func (del *delivery) get(w http.ResponseWriter, r *http.Request) {
 //	@Security		cookieAuth
 func (del *delivery) partialUpdate(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	userID, err := strconv.Atoi(vars["id"])
+	userID, err := strconv.ParseInt(vars["id"], 10, 64)
 	if err != nil {
 		pHTTP.HandleError(w, r, err)
 		return
@@ -156,7 +156,7 @@ func (del *delivery) partialUpdate(w http.ResponseWriter, r *http.Request) {
 //	@Security		cookieAuth
 func (del *delivery) updateAvatar(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	userID, err := strconv.Atoi(vars["id"])
+	userID, err := strconv.ParseInt(vars["id"], 10, 64)
 	if err != nil {
 		pHTTP.HandleError(w, r, err)
 		return

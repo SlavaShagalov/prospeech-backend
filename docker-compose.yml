@@ -60,6 +60,7 @@ services:
     volumes:
       - ./cmd/api/logs:/logs
       - ./configs/api_main.yaml:/configs/api.yaml
+      - ./.aws:/root/.aws
     #    networks:
     #      ps-network:
     #        ipv4_address: 192.168.0.5
