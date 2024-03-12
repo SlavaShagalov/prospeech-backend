@@ -4,13 +4,12 @@ import (
 	"context"
 	"github.com/SlavaShagalov/prospeech-backend/internal/pkg/config"
 	"github.com/SlavaShagalov/prospeech-backend/internal/pkg/storages/postgres"
-	"log"
-	"net/http"
-	"os"
-
 	"github.com/gorilla/mux"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
+	"log"
+	"net/http"
+	"os"
 
 	mw "github.com/SlavaShagalov/prospeech-backend/internal/middleware"
 	pHasher "github.com/SlavaShagalov/prospeech-backend/internal/pkg/hasher/bcrypt"
@@ -76,6 +75,10 @@ func main() {
 		pgxPool.Close()
 		logger.Info("Postgres connection closed")
 	}()
+
+	//cmd := exec.Command("python3", "/bin/ml/main.py")
+	//err = cmd.Run()
+	//logger.Warn("", zap.Error(err))
 
 	// ===== Sessions Storage =====
 	redisClient, err := pStorages.NewRedis(logger, ctx)

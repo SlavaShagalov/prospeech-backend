@@ -12,6 +12,8 @@ import (
 	"go.uber.org/zap"
 	"io"
 	"net/http"
+	"strconv"
+	"time"
 )
 
 const (
@@ -81,6 +83,8 @@ func (del *delivery) create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (del *delivery) list(w http.ResponseWriter, r *http.Request) {
+	time.Sleep(500 * time.Millisecond)
+
 	userID, ok := r.Context().Value(mw.ContextUserID).(int64)
 	if !ok {
 		pHTTP.HandleError(w, r, pErrors.ErrReadBody)
@@ -98,21 +102,21 @@ func (del *delivery) list(w http.ResponseWriter, r *http.Request) {
 }
 
 func (del *delivery) get(w http.ResponseWriter, r *http.Request) {
-	//vars := mux.Vars(r)
-	//audioID, err := strconv.Atoi(vars["id"])
-	//if err != nil {
-	//	pHTTP.HandleError(w, r, err)
-	//	return
-	//}
-	//
-	//audio, err := del.uc.Get(ctx, audioID)
-	//if err != nil {
-	//	pHTTP.HandleError(w, r, err)
-	//	return
-	//}
-	//
-	//response := newGetResponse(&audio)
-	//pHTTP.SendJSON(w, r, http.StatusOK, response)
+	vars := mux.Vars(r)
+	audioID, err := strconv.ParseInt(vars["id"], 10, 64)
+	if err != nil {
+		pHTTP.HandleError(w, r, err)
+		return
+	}
+
+	audio, err := del.uc.Get(r.Context(), audioID)
+	if err != nil {
+		pHTTP.HandleError(w, r, err)
+		return
+	}
+
+	response := newGetResponse(audio)
+	pHTTP.SendJSON(w, r, http.StatusOK, response)
 }
 
 func (del *delivery) partialUpdate(w http.ResponseWriter, r *http.Request) {

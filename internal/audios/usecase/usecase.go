@@ -9,6 +9,8 @@ import (
 	pFiles "github.com/SlavaShagalov/prospeech-backend/internal/files"
 	"github.com/SlavaShagalov/prospeech-backend/internal/models"
 	"github.com/google/uuid"
+	"log"
+	"os/exec"
 	"path/filepath"
 )
 
@@ -28,7 +30,16 @@ func New(repo repository.Repository, filesRepo files.Repository) pAudios.Usecase
 	}
 }
 
+func runML() {
+	cmd := exec.Command("python3", "/bin/ml/main.py")
+	if err := cmd.Run(); err != nil {
+		log.Fatal(err)
+	}
+}
+
 func (uc *usecase) Create(ctx context.Context, params *pAudios.CreateParams) (*models.Audio, error) {
+	//runML()
+
 	file := pFiles.File{
 		Name: audiosFolder + "/" + uuid.NewString() + filepath.Ext(params.File.Name),
 		Data: params.File.Data,
@@ -52,12 +63,9 @@ func (uc *usecase) List(ctx context.Context, userID int64) ([]models.Audio, erro
 	return uc.repo.List(ctx, userID)
 }
 
-//func (uc *usecase) Get(ctx context.Context, id int) (models.audio, error) {
-//	ctx, span := opentel.Tracer.Start(ctx, componentName+" "+"Get")
-//	defer span.End()
-//
-//	return uc.repo.Get(ctx, id)
-//}
+func (uc *usecase) Get(ctx context.Context, id int64) (*models.Audio, error) {
+	return uc.repo.Get(ctx, id)
+}
 
 //func (uc *usecase) PartialUpdate(ctx context.Context, params *pAudios.PartialUpdateParams) (models.audio, error) {
 //	ctx, span := opentel.Tracer.Start(ctx, componentName+" "+"PartialUpdate")

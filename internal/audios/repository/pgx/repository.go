@@ -97,15 +97,14 @@ const getCmd = `
 func (repo *repository) Get(ctx context.Context, id int64) (*models.Audio, error) {
 	row := repo.pool.QueryRow(ctx, getCmd, id)
 
-	var audio *models.Audio
+	audio := new(models.Audio)
 	err := scanAudio(row, audio)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, errors.Wrap(pErrors.ErrAudioNotFound, err.Error())
 		}
 
-		repo.log.Error(constants.DBScanError, zap.Error(err), zap.String("sql_query", getCmd),
-			zap.Int64("id", id))
+		repo.log.Error(constants.DBScanError, zap.Error(err), zap.Int64("id", id))
 		return nil, errors.Wrap(pErrors.ErrDb, err.Error())
 	}
 
