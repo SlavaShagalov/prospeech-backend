@@ -8,12 +8,12 @@ import (
 
 func createSessionCookie(token string) *http.Cookie {
 	return &http.Cookie{
-		Name:     constants.SessionName,
-		Value:    token,
-		Path:     "/",
-		Expires:  time.Now().Add(constants.SessionLivingTime),
-		Secure:   true,
+		Name:    constants.SessionName,
+		Value:   token,
+		Path:    "/",
+		Expires: time.Now().Add(constants.SessionLivingTime),
+		//Secure:   true,
 		HttpOnly: true,
-		SameSite: http.SameSiteNoneMode,
+		//SameSite: http.SameSiteNoneMode,
 	}
 }

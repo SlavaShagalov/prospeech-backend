@@ -30,8 +30,8 @@ func New(repo repository.Repository, filesRepo files.Repository) pAudios.Usecase
 	}
 }
 
-func runML() {
-	cmd := exec.Command("python3", "/bin/ml/main.py")
+func runML(filename string) {
+	cmd := exec.Command("python3", "/bin/ml/main.py", filename)
 	if err := cmd.Run(); err != nil {
 		log.Fatal(err)
 	}
