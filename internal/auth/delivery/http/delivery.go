@@ -180,8 +180,6 @@ func (d *delivery) logout(w http.ResponseWriter, r *http.Request) {
 }
 
 func (d *delivery) me(w http.ResponseWriter, r *http.Request) {
-	time.Sleep(500 * time.Millisecond)
-
 	userID, ok := r.Context().Value(mw.ContextUserID).(int64)
 	if !ok {
 		pHTTP.HandleError(w, r, pErrors.ErrReadBody)

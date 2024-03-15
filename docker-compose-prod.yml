@@ -1,7 +1,7 @@
 version: "3.9"
 
 services:
-  # === Storages ===
+  # ===== Storages =====
 
   db:
     image: postgres
@@ -34,7 +34,7 @@ services:
       restart_policy:
         condition: on-failure
 
-  # === Services ===
+  # ===== Services =====
 
   api:
     image: ps_api
@@ -64,8 +64,11 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./nginx/prod.conf:/etc/nginx/conf.d/default.conf
+#      - ./certbot/conf:/etc/letsencrypt
+#      - ./certbot/www:/var/www/certbot
     ports:
       - "80:80"
+      - "443:443"
     depends_on:
       - api
     networks:
@@ -73,6 +76,15 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+
+#  certbot:
+#    image: certbot/certbot
+#    container_name: ps_certbot
+#    volumes:
+#      - ./certbot/conf:/etc/letsencrypt
+#      - ./certbot/www:/var/www/certbot
+#    command: certonly --webroot --webroot-path /var/www/certbot --force-renewal --email=slav.shagal@yandex.ru -d prospeech.tech \
+#      --agree-tos --no-eff-email
 
 networks:
   ps-network:
