@@ -3,12 +3,14 @@ package repository
 import (
 	"context"
 	"github.com/SlavaShagalov/prospeech-backend/internal/models"
+	"time"
 )
 
 type CreateParams struct {
-	UserID int64
-	Title  string
-	URL    string
+	UserID   int64
+	Title    string
+	URL      string
+	Duration time.Duration
 }
 
 type PartialUpdateParams struct {

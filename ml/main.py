@@ -1,3 +1,4 @@
+import json
 import sys
 
 from handler import MyHandler
@@ -8,6 +9,7 @@ handler = MyHandler()
 
 words, word_start_times, word_end_times, duration_sec = handler.inference()
 
-with open("/data/words.txt", "w") as file:
-    file.writelines(words)
+data = (words, word_start_times, word_end_times, duration_sec)
 
+with open('/data/speech.json', 'w') as file:
+    json.dump(data, file)

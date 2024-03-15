@@ -13,8 +13,5 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
 
 FROM ubuntu AS api
 WORKDIR /
-RUN apt update -y && apt-get install -y python3
-#RUN pip3 install
-COPY ml /bin/ml
 COPY --from=build /bin/api /bin/api
 CMD ["/bin/api"]

@@ -34,21 +34,46 @@ func runML(filename string) {
 	cmd := exec.Command("python3", "/bin/ml/main.py", filename)
 	if err := cmd.Run(); err != nil {
 		log.Fatal(err)
+		return
 	}
 }
 
-func (uc *usecase) Create(ctx context.Context, params *pAudios.CreateParams) (*models.Audio, error) {
-	//runML()
+type Data struct {
+	Words      []string
+	StartTimes []float64
+	EndTimes   []float64
+	Duration   int
+}
 
-	file := pFiles.File{
+func (uc *usecase) Create(ctx context.Context, params *pAudios.CreateParams) (*models.Audio, error) {
+	fileS3 := pFiles.File{
 		Name: audiosFolder + "/" + uuid.NewString() + filepath.Ext(params.File.Name),
 		Data: params.File.Data,
 	}
-	url, err := uc.filesRepo.Create(ctx, &file)
+	url, err := uc.filesRepo.Create(ctx, &fileS3)
 	if err != nil {
 		return nil, err
 	}
-	//url := file.Name
+	//url := fileS3.Name
+
+	//var data Data
+	//err = os.WriteFile("/data/speech."+filepath.Ext(params.File.Name), params.File.Data, 0777)
+	//if err != nil {
+	//	fmt.Println("Ошибка при записи в файл:", err)
+	//} else {
+	//	runML("/data/speech." + filepath.Ext(params.File.Name))
+	//
+	//	file, err := os.Open("/data/speech.json")
+	//	if err != nil {
+	//		fmt.Println(err)
+	//	}
+	//	defer file.Close()
+	//
+	//	err = json.NewDecoder(file).Decode(&data)
+	//	if err != nil {
+	//		fmt.Println(err)
+	//	}
+	//}
 
 	repoParams := audiosRepo.CreateParams{
 		UserID: params.UserID,

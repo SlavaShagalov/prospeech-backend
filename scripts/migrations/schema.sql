@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS users
 (
-    id              bigserial    NOT NULL PRIMARY KEY,
+    id              bigserial NOT NULL PRIMARY KEY,
     username        text      NOT NULL UNIQUE,
     hashed_password varchar   NOT NULL,
     email           varchar   NOT NULL,
@@ -12,17 +12,21 @@ CREATE TABLE IF NOT EXISTS users
 
 CREATE TABLE IF NOT EXISTS audios
 (
-    id         bigserial    NOT NULL PRIMARY KEY,
-    user_id    bigint    NOT NULL REFERENCES users (id) ON DELETE CASCADE,
-    title      varchar   NOT NULL DEFAULT '',
-    url        varchar   NOT NULL,
-    created_at timestamp NOT NULL DEFAULT now(),
-    updated_at timestamp NOT NULL DEFAULT now()
+    id          bigserial NOT NULL PRIMARY KEY,
+    user_id     bigint    NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    title       varchar   NOT NULL DEFAULT '',
+    url         varchar   NOT NULL,
+    words       text[],
+    start_times float[],
+    end_times   float[],
+    duration    interval  NOT NULL,
+    created_at  timestamp NOT NULL DEFAULT now(),
+    updated_at  timestamp NOT NULL DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS videos
 (
-    id         bigserial    NOT NULL PRIMARY KEY,
+    id         bigserial NOT NULL PRIMARY KEY,
     user_id    bigint    NOT NULL REFERENCES users (id) ON DELETE CASCADE,
     title      varchar   NOT NULL DEFAULT '',
     url        varchar   NOT NULL,
