@@ -19,3 +19,6 @@ archive
 allure-results
 
 static
+
+# Python
+__pycache__
