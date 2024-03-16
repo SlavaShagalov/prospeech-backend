@@ -40,8 +40,11 @@ func (repo *repository) Create(ctx context.Context, file *pFiles.File) (location
 		return "", err
 	}
 
-	repo.log.Debug("Image created", zap.String("location", output.Location))
-	return output.Location, nil
+	url := output.Location
+	newURL := strings.Replace(url, "http://", "https://", 1)
+
+	repo.log.Debug("Image created", zap.String("location", newURL))
+	return newURL, nil
 }
 
 func (repo *repository) Get(location string) (imgData []byte, err error) {
