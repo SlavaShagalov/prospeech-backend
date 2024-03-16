@@ -16,10 +16,11 @@ CREATE TABLE IF NOT EXISTS audios
     user_id     bigint    NOT NULL REFERENCES users (id) ON DELETE CASCADE,
     title       varchar   NOT NULL DEFAULT '',
     url         varchar   NOT NULL,
-    words       text[],
-    start_times float[],
-    end_times   float[],
-    duration    interval  NOT NULL,
+    text        text      NULL,
+    words       text[]    NULL,
+    start_times float[]   NULL,
+    end_times   float[]   NULL,
+    duration    interval  NULL,
     created_at  timestamp NOT NULL DEFAULT now(),
     updated_at  timestamp NOT NULL DEFAULT now()
 );

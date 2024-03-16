@@ -27,12 +27,23 @@ func New(pool *pgxpool.Pool, log *zap.Logger) pAudiosRepo.Repository {
 }
 
 const createCmd = `
-	INSERT INTO audios (user_id, title, URL) 
-	VALUES ($1, $2, $3)
-	RETURNING id, user_id, title, URL, created_at, updated_at;`
+	INSERT INTO audios (user_id, title, URL, text) 
+	VALUES ($1, $2, $3, $4)
+	RETURNING id, user_id, title, URL, text, created_at, updated_at;`
+
+//-- 	RETURNING id, user_id, title, URL, text, words, start_times, end_times, duration, created_at, updated_at;`
 
 func (repo *repository) Create(ctx context.Context, params *pAudiosRepo.CreateParams) (*models.Audio, error) {
-	row := repo.pool.QueryRow(ctx, createCmd, params.UserID, params.Title, params.URL)
+	row := repo.pool.QueryRow(ctx, createCmd,
+		params.UserID,
+		params.Title,
+		params.URL,
+		params.Text,
+		//params.Words,
+		//params.StartTimes,
+		//params.EndTimes,
+		//params.Duration,
+	)
 
 	audio := new(models.Audio)
 	err := scanAudio(row, audio)
@@ -55,7 +66,7 @@ func (repo *repository) Create(ctx context.Context, params *pAudiosRepo.CreatePa
 }
 
 const listCmd = `
-	SELECT id, user_id, title, url, created_at, updated_at
+	SELECT id, user_id, title, url, text, created_at, updated_at
 	FROM audios
 	WHERE user_id = $1;`
 
@@ -75,6 +86,7 @@ func (repo *repository) List(ctx context.Context, userID int64) ([]models.Audio,
 			&audio.UserID,
 			&audio.Title,
 			&audio.URL,
+			&audio.Text,
 			&audio.CreatedAt,
 			&audio.UpdatedAt,
 		)
@@ -90,7 +102,7 @@ func (repo *repository) List(ctx context.Context, userID int64) ([]models.Audio,
 }
 
 const getCmd = `
-	SELECT id, user_id, title, url, created_at, updated_at
+	SELECT id, user_id, title, url, text, created_at, updated_at
 	FROM audios
 	WHERE id = $1;`
 
@@ -111,40 +123,33 @@ func (repo *repository) Get(ctx context.Context, id int64) (*models.Audio, error
 	return audio, nil
 }
 
-//const partialUpdateCmd = `
-//	UPDATE audios
-//	SET title        = CASE WHEN $1::boolean THEN $2 ELSE title END,
-//		description  = CASE WHEN $3::boolean THEN $4 ELSE description END,
-//		user_id = CASE WHEN $5::boolean THEN $6 ELSE user_id END
-//	WHERE id = $7
-//	RETURNING id, user_id, title, description, background, created_at, updated_at;`
-//
-//func (repo *repository) PartialUpdate(ctx context.Context, params *pkgAudios.PartialUpdateParams) (models.Audio, error) {
-//	row := repo.pool.QueryRow(ctx, partialUpdateCmd,
-//		params.UpdateTitle,
-//		params.Title,
-//		params.UpdateDescription,
-//		params.Description,
-//		params.UpdateUserID,
-//		params.UserID,
-//		params.ID,
-//	)
-//
-//	var audio models.Audio
-//	err := scanAudio(row, &audio)
-//	if err != nil {
-//		if errors.Is(err, sql.ErrNoRows) {
-//			return nil, errors.Wrap(pErrors.ErrAudioNotFound, err.Error())
-//		}
-//
-//		repo.log.Error(constants.DBScanError, zap.Error(err), zap.String("sql_query", partialUpdateCmd),
-//			zap.Any("params", params))
-//		return nil, errors.Wrap(pErrors.ErrDb, err.Error())
-//	}
-//
-//	repo.log.Debug("Audio partial updated", zap.Any("audio", audio))
-//	return audio, nil
-//}
+const partialUpdateCmd = `
+	UPDATE audios
+	SET title = CASE WHEN $1::boolean THEN $2 ELSE title END
+	WHERE id = $3
+	RETURNING id, user_id, title, url, created_at, updated_at;`
+
+func (repo *repository) PartialUpdate(ctx context.Context, params *pAudiosRepo.PartialUpdateParams) (*models.Audio, error) {
+	row := repo.pool.QueryRow(ctx, partialUpdateCmd,
+		params.UpdateTitle,
+		params.Title,
+		params.ID,
+	)
+
+	audio := new(models.Audio)
+	err := scanAudio(row, audio)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, errors.Wrap(pErrors.ErrAudioNotFound, err.Error())
+		}
+
+		repo.log.Error(constants.DBScanError, zap.Error(err), zap.Any("params", params))
+		return nil, errors.Wrap(pErrors.ErrDb, err.Error())
+	}
+
+	repo.log.Debug("Audio partial updated", zap.Any("audio", audio))
+	return audio, nil
+}
 
 const deleteCmd = `
 	DELETE FROM audios 
@@ -153,8 +158,7 @@ const deleteCmd = `
 func (repo *repository) Delete(ctx context.Context, id int64) error {
 	result, err := repo.pool.Exec(ctx, deleteCmd, id)
 	if err != nil {
-		repo.log.Error(constants.DBError, zap.Error(err), zap.String("sql_query", deleteCmd),
-			zap.Int64("id", id))
+		repo.log.Error(constants.DBError, zap.Error(err), zap.Int64("id", id))
 		return errors.Wrap(pErrors.ErrDb, err.Error())
 	}
 
@@ -173,6 +177,7 @@ func scanAudio(row pgx.Row, audio *models.Audio) error {
 		&audio.UserID,
 		&audio.Title,
 		&audio.URL,
+		&audio.Text,
 		&audio.CreatedAt,
 		&audio.UpdatedAt,
 	)

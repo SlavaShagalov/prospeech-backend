@@ -12,6 +12,7 @@ import (
 	"log"
 	"os/exec"
 	"path/filepath"
+	"time"
 )
 
 const (
@@ -39,10 +40,16 @@ func runML(filename string) {
 }
 
 type Data struct {
-	Words      []string
-	StartTimes []float64
-	EndTimes   []float64
-	Duration   int
+	Words      []string      `json:"words"`
+	StartTimes []float64     `json:"start_times"`
+	EndTimes   []float64     `json:"end_times"`
+	Duration   time.Duration `json:"duration"`
+}
+
+func analyze(file *pFiles.File) (string, error) {
+	log.Println("Start processing " + file.Name)
+	log.Println("End processing " + file.Name)
+	return "Hello from ML!", nil
 }
 
 func (uc *usecase) Create(ctx context.Context, params *pAudios.CreateParams) (*models.Audio, error) {
@@ -54,7 +61,11 @@ func (uc *usecase) Create(ctx context.Context, params *pAudios.CreateParams) (*m
 	if err != nil {
 		return nil, err
 	}
-	//url := fileS3.Name
+
+	text, err := analyze(&params.File)
+	if err != nil {
+		return nil, err
+	}
 
 	//var data Data
 	//err = os.WriteFile("/data/speech."+filepath.Ext(params.File.Name), params.File.Data, 0777)
@@ -77,10 +88,12 @@ func (uc *usecase) Create(ctx context.Context, params *pAudios.CreateParams) (*m
 
 	repoParams := audiosRepo.CreateParams{
 		UserID: params.UserID,
-		Title:  params.File.Name,
+		Title:  "Untitled Speech",
 		URL:    url,
+		Text:   text,
 	}
 	audio, err := uc.repo.Create(ctx, &repoParams)
+	log.Println(audio)
 	return audio, err
 }
 
@@ -92,41 +105,10 @@ func (uc *usecase) Get(ctx context.Context, id int64) (*models.Audio, error) {
 	return uc.repo.Get(ctx, id)
 }
 
-//func (uc *usecase) PartialUpdate(ctx context.Context, params *pAudios.PartialUpdateParams) (models.audio, error) {
-//	ctx, span := opentel.Tracer.Start(ctx, componentName+" "+"PartialUpdate")
-//	defer span.End()
-//
-//	return uc.repo.PartialUpdate(ctx, params)
-//}
-//
-//func (uc *usecase) UpdateBackground(ctx context.Context, id int, imgData []byte, filename string) (*models.audio, error) {
-//	ctx, span := opentel.Tracer.Start(ctx, componentName+" "+"UpdateBackground")
-//	defer span.End()
-//
-//	audio, err := uc.repo.Get(ctx, id)
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	if audio.Background == nil {
-//		imgName := backgroundsFolder + "/" + uuid.NewString() + filepath.Ext(filename)
-//		imgPath, err := uc.filesRepo.Create(imgName, imgData)
-//		if err == nil {
-//			err = uc.repo.UpdateBackground(ctx, id, imgPath)
-//			if err == nil {
-//				audio.Background = &imgPath
-//			}
-//		}
-//	} else {
-//		err = uc.filesRepo.Update(*audio.Background, imgData)
-//	}
-//
-//	return &audio, err
-//}
-//
-//func (uc *usecase) Delete(ctx context.Context, id int) error {
-//	ctx, span := opentel.Tracer.Start(ctx, componentName+" "+"Delete")
-//	defer span.End()
-//
-//	return uc.repo.Delete(ctx, id)
-//}
+func (uc *usecase) PartialUpdate(ctx context.Context, params *audiosRepo.PartialUpdateParams) (*models.Audio, error) {
+	return uc.repo.PartialUpdate(ctx, params)
+}
+
+func (uc *usecase) Delete(ctx context.Context, id int64) error {
+	return uc.repo.Delete(ctx, id)
+}

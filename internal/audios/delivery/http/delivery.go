@@ -2,7 +2,9 @@ package http
 
 import (
 	"bytes"
+	"encoding/json"
 	pAudios "github.com/SlavaShagalov/prospeech-backend/internal/audios"
+	pAudiosRepo "github.com/SlavaShagalov/prospeech-backend/internal/audios/repository"
 	pFiles "github.com/SlavaShagalov/prospeech-backend/internal/files"
 	mw "github.com/SlavaShagalov/prospeech-backend/internal/middleware"
 	"github.com/SlavaShagalov/prospeech-backend/internal/pkg/constants"
@@ -13,6 +15,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 const (
@@ -82,6 +85,8 @@ func (del *delivery) create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (del *delivery) list(w http.ResponseWriter, r *http.Request) {
+	time.Sleep(700 * time.Millisecond)
+
 	userID, ok := r.Context().Value(mw.ContextUserID).(int64)
 	if !ok {
 		pHTTP.HandleError(w, r, pErrors.ErrReadBody)
@@ -117,61 +122,55 @@ func (del *delivery) get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (del *delivery) partialUpdate(w http.ResponseWriter, r *http.Request) {
-	//
-	//vars := mux.Vars(r)
-	//audioID, err := strconv.Atoi(vars["id"])
-	//if err != nil {
-	//	pHTTP.HandleError(w, r, err)
-	//	return
-	//}
-	//
-	//body, err := pHTTP.ReadBody(r, del.log)
-	//if err != nil {
-	//	pHTTP.HandleError(w, r, err)
-	//	return
-	//}
-	//
-	//var request partialUpdateRequest
-	//err = request.UnmarshalJSON(body)
-	//if err != nil {
-	//	pHTTP.HandleError(w, r, pErrors.ErrReadBody)
-	//	return
-	//}
-	//
-	//params := pAudios.PartialUpdateParams{ID: audioID}
-	//params.UpdateTitle = request.Title != nil
-	//if params.UpdateTitle {
-	//	params.Title = *request.Title
-	//}
-	//params.UpdateDescription = request.Description != nil
-	//if params.UpdateDescription {
-	//	params.Description = *request.Description
-	//}
-	//
-	//audio, err := del.uc.PartialUpdate(ctx, &params)
-	//if err != nil {
-	//	pHTTP.HandleError(w, r, err)
-	//	return
-	//}
-	//
-	//response := newGetResponse(&audio)
-	//pHTTP.SendJSON(w, r, http.StatusOK, response)
+	vars := mux.Vars(r)
+	audioID, err := strconv.ParseInt(vars["id"], 10, 64)
+	if err != nil {
+		pHTTP.HandleError(w, r, err)
+		return
+	}
+
+	body, err := pHTTP.ReadBody(r, del.log)
+	if err != nil {
+		pHTTP.HandleError(w, r, err)
+		return
+	}
+
+	var request partialUpdateRequest
+	err = json.Unmarshal(body, &request)
+	if err != nil {
+		pHTTP.HandleError(w, r, pErrors.ErrReadBody)
+		return
+	}
+
+	params := pAudiosRepo.PartialUpdateParams{ID: audioID}
+	params.UpdateTitle = request.Title != nil
+	if params.UpdateTitle {
+		params.Title = *request.Title
+	}
+
+	audio, err := del.uc.PartialUpdate(r.Context(), &params)
+	if err != nil {
+		pHTTP.HandleError(w, r, err)
+		return
+	}
+
+	response := newGetResponse(audio)
+	pHTTP.SendJSON(w, r, http.StatusOK, response)
 }
 
 func (del *delivery) delete(w http.ResponseWriter, r *http.Request) {
-	//
-	//vars := mux.Vars(r)
-	//audioID, err := strconv.Atoi(vars["id"])
-	//if err != nil {
-	//	pHTTP.HandleError(w, r, err)
-	//	return
-	//}
-	//
-	//err = del.uc.Delete(ctx, audioID)
-	//if err != nil {
-	//	pHTTP.HandleError(w, r, err)
-	//	return
-	//}
-	//
-	//w.WriteHeader(http.StatusNoContent)
+	vars := mux.Vars(r)
+	audioID, err := strconv.ParseInt(vars["id"], 10, 64)
+	if err != nil {
+		pHTTP.HandleError(w, r, err)
+		return
+	}
+
+	err = del.uc.Delete(r.Context(), audioID)
+	if err != nil {
+		pHTTP.HandleError(w, r, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }

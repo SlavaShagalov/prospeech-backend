@@ -7,8 +7,7 @@ import (
 
 // API requests
 type partialUpdateRequest struct {
-	Title       *string `json:"title"`
-	Description *string `json:"description"`
+	Title *string `json:"title"`
 }
 
 // API responses
@@ -27,6 +26,7 @@ type createResponse struct {
 	UserID    int64     `json:"user_id"`
 	Title     string    `json:"title"`
 	URL       string    `json:"url"`
+	Text      string    `json:"text"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -37,6 +37,7 @@ func newCreateResponse(audio *models.Audio) *createResponse {
 		UserID:    audio.UserID,
 		Title:     audio.Title,
 		URL:       audio.URL,
+		Text:      audio.Text,
 		CreatedAt: audio.CreatedAt,
 		UpdatedAt: audio.UpdatedAt,
 	}
@@ -47,6 +48,7 @@ type getResponse struct {
 	UserID    int64     `json:"user_id"`
 	Title     string    `json:"title"`
 	URL       string    `json:"url"`
+	Text      string    `json:"text"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -57,6 +59,7 @@ func newGetResponse(audio *models.Audio) *getResponse {
 		UserID:    audio.UserID,
 		Title:     audio.Title,
 		URL:       audio.URL,
+		Text:      audio.Text,
 		CreatedAt: audio.CreatedAt,
 		UpdatedAt: audio.UpdatedAt,
 	}
