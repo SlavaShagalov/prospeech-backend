@@ -8,10 +8,12 @@ import (
 	"github.com/SlavaShagalov/prospeech-backend/internal/files"
 	pFiles "github.com/SlavaShagalov/prospeech-backend/internal/files"
 	"github.com/SlavaShagalov/prospeech-backend/internal/models"
+	"github.com/SlavaShagalov/prospeech-backend/internal/users"
 	"github.com/google/uuid"
 	"log"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"time"
 )
 
@@ -22,12 +24,14 @@ const (
 type usecase struct {
 	repo      repository.Repository
 	filesRepo files.Repository
+	usersRepo users.Repository
 }
 
-func New(repo repository.Repository, filesRepo files.Repository) pAudios.Usecase {
+func New(repo repository.Repository, filesRepo files.Repository, usersRepo users.Repository) pAudios.Usecase {
 	return &usecase{
 		repo:      repo,
 		filesRepo: filesRepo,
+		usersRepo: usersRepo,
 	}
 }
 
@@ -86,14 +90,19 @@ func (uc *usecase) Create(ctx context.Context, params *pAudios.CreateParams) (*m
 	//	}
 	//}
 
+	title := "Выступление"
+	curCount, err := uc.usersRepo.UpdateUntitledSpeechesCount(ctx, params.UserID)
+	if err == nil {
+		title += " " + strconv.Itoa(curCount)
+	}
+
 	repoParams := audiosRepo.CreateParams{
 		UserID: params.UserID,
-		Title:  "Untitled Speech",
+		Title:  title,
 		URL:    url,
 		Text:   text,
 	}
 	audio, err := uc.repo.Create(ctx, &repoParams)
-	log.Println(audio)
 	return audio, err
 }
 

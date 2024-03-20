@@ -70,6 +70,20 @@ services:
       restart_policy:
         condition: on-failure
 
+  ml:
+    image: ps_ml
+    build:
+      context: .
+      dockerfile: ./whisper_api/Dockerfile
+    container_name: ps_ml
+    ports:
+      - "8200:8200"
+    networks:
+      - ps-network
+    deploy:
+      restart_policy:
+        condition: on-failure
+
   nginx:
     image: nginx:1.22.1
     container_name: ps_nginx

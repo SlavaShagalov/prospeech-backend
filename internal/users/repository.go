@@ -38,6 +38,7 @@ type Repository interface {
 
 	FullUpdate(ctx context.Context, params *FullUpdateParams) (models.User, error)
 	PartialUpdate(ctx context.Context, params *PartialUpdateParams) (models.User, error)
+	UpdateUntitledSpeechesCount(ctx context.Context, userID int64) (int, error)
 	UpdateAvatar(ctx context.Context, id int64, avatar string) error
 
 	Delete(ctx context.Context, id int64) error

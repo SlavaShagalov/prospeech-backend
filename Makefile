@@ -9,6 +9,10 @@ stop:
 down:
 	docker compose down -v
 
+.PHONY: build
+build:
+	docker compose -f docker-compose.yml build api
+
 .PHONY: dev-up
 dev-up:
 	docker compose -f docker-compose.yml up -d --build db redis api nginx
@@ -53,7 +57,7 @@ easyjson:
 swag:
 	swag init -g cmd/api/main.go
 
-# ===== FORMAT =====
+# ===== OTHER =====
 
 .PHONY: format
 format:

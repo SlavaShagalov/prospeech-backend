@@ -111,7 +111,7 @@ func main() {
 	// ===== Usecases =====
 	authUC := authUsecase.New(usersRepo, sessionsRepo, hasher, logger)
 	usersUC := usersUsecase.New(usersRepo, filesRepo)
-	audiosUC := audiosUsecase.New(audiosRepo, filesRepo)
+	audiosUC := audiosUsecase.New(audiosRepo, filesRepo, usersRepo)
 
 	// ===== Middleware =====
 	checkAuth := mw.NewCheckAuth(authUC, logger)

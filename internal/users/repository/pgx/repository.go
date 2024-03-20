@@ -28,7 +28,7 @@ func New(pool *pgxpool.Pool, log *zap.Logger) pkgUsers.Repository {
 const createCmd = `
 	INSERT INTO users (name, username, email, hashed_password)
 	VALUES ($1, $2, $3, $4)
-	RETURNING id, username, hashed_password, email, name, avatar, created_at, updated_at;`
+	RETURNING id, username, hashed_password, email, name, avatar, created_at, updated_at, untitled_speeches_count;`
 
 func (repo *repository) Create(ctx context.Context, params *pkgUsers.CreateParams) (models.User, error) {
 	row := repo.pool.QueryRow(ctx, createCmd, params.Name, params.Username, params.Email, params.HashedPassword)
@@ -36,7 +36,7 @@ func (repo *repository) Create(ctx context.Context, params *pkgUsers.CreateParam
 	var user models.User
 	err := scanUser(row, &user)
 	if err != nil {
-		repo.log.Error(constants.DBScanError, zap.Error(err), zap.Any("create_params", params))
+		repo.log.Error(constants.DBError, zap.Error(err), zap.Any("create_params", params))
 		return models.User{}, errors.Wrap(pkgErrors.ErrDb, err.Error())
 	}
 
@@ -45,13 +45,13 @@ func (repo *repository) Create(ctx context.Context, params *pkgUsers.CreateParam
 }
 
 const listCmd = `
-	SELECT id, username, hashed_password, email, name, avatar, created_at, updated_at
+	SELECT id, username, hashed_password, email, name, avatar, created_at, updated_at, untitled_speeches_count
 	FROM users;`
 
 func (repo *repository) List(ctx context.Context) ([]models.User, error) {
 	rows, err := repo.pool.Query(ctx, listCmd)
 	if err != nil {
-		repo.log.Error(constants.DBError, zap.Error(err), zap.String("sql_query", listCmd))
+		repo.log.Error(constants.DBError, zap.Error(err))
 		return nil, errors.Wrap(pkgErrors.ErrDb, err.Error())
 	}
 	defer rows.Close()
@@ -67,11 +67,12 @@ func (repo *repository) List(ctx context.Context) ([]models.User, error) {
 			&user.Email,
 			&user.Name,
 			&avatar,
+			&user.UntitledSpeechesCount,
 			&user.CreatedAt,
 			&user.UpdatedAt,
 		)
 		if err != nil {
-			repo.log.Error(constants.DBScanError, zap.Error(err), zap.String("sql_query", listCmd))
+			repo.log.Error(constants.DBError, zap.Error(err))
 			return nil, errors.Wrap(pkgErrors.ErrDb, err.Error())
 		}
 
@@ -88,7 +89,7 @@ func (repo *repository) List(ctx context.Context) ([]models.User, error) {
 }
 
 const getCmd = `
-	SELECT id, username, hashed_password, email, name, avatar, created_at, updated_at
+	SELECT id, username, hashed_password, email, name, avatar, created_at, updated_at, untitled_speeches_count
 	FROM users
 	WHERE id = $1;`
 
@@ -102,7 +103,7 @@ func (repo *repository) Get(ctx context.Context, id int64) (models.User, error) 
 			return models.User{}, errors.Wrap(pkgErrors.ErrUserNotFound, err.Error())
 		}
 
-		repo.log.Error(constants.DBScanError, zap.Error(err), zap.Int64("id", id))
+		repo.log.Error(constants.DBError, zap.Error(err), zap.Int64("id", id))
 		return models.User{}, errors.Wrap(pkgErrors.ErrDb, err.Error())
 	}
 
@@ -110,7 +111,7 @@ func (repo *repository) Get(ctx context.Context, id int64) (models.User, error) 
 }
 
 const getByUsernameCmd = `
-	SELECT id, username, hashed_password, email, name, avatar, created_at, updated_at
+	SELECT id, username, hashed_password, email, name, avatar, created_at, updated_at, untitled_speeches_count
 	FROM users
 	WHERE username = $1;`
 
@@ -124,8 +125,7 @@ func (repo *repository) GetByUsername(ctx context.Context, username string) (mod
 			return models.User{}, pkgErrors.ErrUserNotFound
 		}
 
-		repo.log.Error(constants.DBScanError, zap.Error(err), zap.String("sql_query", getByUsernameCmd),
-			zap.String("username", username))
+		repo.log.Error(constants.DBError, zap.Error(err), zap.String("username", username))
 		return models.User{}, pkgErrors.ErrDb
 	}
 
@@ -138,7 +138,7 @@ const fullUpdateCmd = `
 	    email    = $2,
 		name     = $3
 	WHERE id = $4
-	RETURNING id, username, hashed_password, email, name, avatar, created_at, updated_at;`
+	RETURNING id, username, hashed_password, email, name, avatar, created_at, updated_at, untitled_speeches_count;`
 
 func (repo *repository) FullUpdate(ctx context.Context, params *pkgUsers.FullUpdateParams) (models.User, error) {
 	row := repo.pool.QueryRow(ctx, fullUpdateCmd, params.Username, params.Email, params.Name, params.ID)
@@ -146,7 +146,7 @@ func (repo *repository) FullUpdate(ctx context.Context, params *pkgUsers.FullUpd
 	var user models.User
 	err := scanUser(row, &user)
 	if err != nil {
-		repo.log.Error(constants.DBScanError, zap.Error(err), zap.String("sql_query", fullUpdateCmd),
+		repo.log.Error(constants.DBError, zap.Error(err), zap.String("sql_query", fullUpdateCmd),
 			zap.Any("params", params))
 		return models.User{}, errors.Wrap(pkgErrors.ErrDb, err.Error())
 	}
@@ -161,7 +161,7 @@ const partialUpdateCmd = `
 		email    = CASE WHEN $3::boolean THEN $4 ELSE email END,
 		name     = CASE WHEN $5::boolean THEN $6 ELSE name END
 	WHERE id = $7
-	RETURNING id, username, hashed_password, email, name, avatar, created_at, updated_at;`
+	RETURNING id, username, hashed_password, email, name, avatar, created_at, updated_at, untitled_speeches_count;`
 
 func (repo *repository) PartialUpdate(ctx context.Context, params *pkgUsers.PartialUpdateParams) (models.User, error) {
 	row := repo.pool.QueryRow(ctx, partialUpdateCmd,
@@ -177,13 +177,31 @@ func (repo *repository) PartialUpdate(ctx context.Context, params *pkgUsers.Part
 	var user models.User
 	err := scanUser(row, &user)
 	if err != nil {
-		repo.log.Error(constants.DBScanError, zap.Error(err), zap.String("sql_query", partialUpdateCmd),
-			zap.Any("params", params))
+		repo.log.Error(constants.DBError, zap.Error(err), zap.Any("params", params))
 		return models.User{}, errors.Wrap(pkgErrors.ErrDb, err.Error())
 	}
 
 	repo.log.Debug("User partial updated", zap.Any("user", user))
 	return user, nil
+}
+
+const updateUntitledSpeechesCountCmd = `
+	UPDATE users
+	SET untitled_speeches_count = untitled_speeches_count + 1
+	WHERE id = $1
+	RETURNING untitled_speeches_count;`
+
+func (repo *repository) UpdateUntitledSpeechesCount(ctx context.Context, userID int64) (int, error) {
+	row := repo.pool.QueryRow(ctx, updateUntitledSpeechesCountCmd, userID)
+
+	var currentCount int
+	err := row.Scan(&currentCount)
+	if err != nil {
+		repo.log.Error(constants.DBError, zap.Error(err))
+		return 0, errors.Wrap(pkgErrors.ErrDb, err.Error())
+	}
+
+	return currentCount, nil
 }
 
 const updateAvatarCmd = `
@@ -238,7 +256,7 @@ func (repo *repository) Exists(ctx context.Context, userID int64) (bool, error) 
 	var exists bool
 	err := row.Scan(&exists)
 	if err != nil {
-		repo.log.Error(constants.DBScanError, zap.Error(err), zap.Int64("user_id", userID))
+		repo.log.Error(constants.DBError, zap.Error(err), zap.Int64("user_id", userID))
 		return false, errors.Wrap(pkgErrors.ErrDb, err.Error())
 	}
 	return exists, nil
@@ -255,6 +273,7 @@ func scanUser(row pgx.Row, user *models.User) error {
 		avatar,
 		&user.CreatedAt,
 		&user.UpdatedAt,
+		&user.UntitledSpeechesCount,
 	)
 	if err != nil {
 		return err
