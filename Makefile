@@ -13,6 +13,15 @@ down:
 build:
 	docker compose -f docker-compose.yml build api
 
+.PHONY: deploy
+deploy:
+	cd ../prospeech-frontend
+	git pull
+	cd  ../prospeech-backend
+	git pull
+	make prod-stop
+	make prod-up
+
 .PHONY: dev-up
 dev-up:
 	docker compose -f docker-compose.yml up -d --build db redis api nginx

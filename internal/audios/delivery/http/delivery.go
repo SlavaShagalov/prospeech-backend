@@ -15,7 +15,6 @@ import (
 	"io"
 	"net/http"
 	"strconv"
-	"time"
 )
 
 const (
@@ -85,8 +84,6 @@ func (del *delivery) create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (del *delivery) list(w http.ResponseWriter, r *http.Request) {
-	time.Sleep(700 * time.Millisecond)
-
 	userID, ok := r.Context().Value(mw.ContextUserID).(int64)
 	if !ok {
 		pHTTP.HandleError(w, r, pErrors.ErrReadBody)
