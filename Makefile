@@ -15,8 +15,7 @@ build:
 
 .PHONY: deploy
 deploy:
-	cd ../prospeech-frontend
-	git pull
+	cd ../prospeech-frontend && pwd && git pull
 	cd  ../prospeech-backend
 	git pull
 	make prod-stop
@@ -71,3 +70,7 @@ swag:
 .PHONY: format
 format:
 	swag fmt
+
+.PHONY: lint
+lint:
+	pwd

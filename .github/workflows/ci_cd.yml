@@ -3,6 +3,15 @@ name: CI/CD
 on: push
 
 jobs:
+#  lint:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Check out repository code
+#        uses: actions/checkout@v4.1.1
+#
+#      - name: Run lint
+#        run: make lint
+
   build:
     runs-on: ubuntu-latest
     steps:

@@ -1,3 +1,0 @@
-torch==2.1.0
-transformers==4.38.2
-librosa==0.10.1
