@@ -55,6 +55,15 @@ services:
       restart_policy:
         condition: on-failure
 
+  ml:
+    image: vazhid/ml_serve:0.0.2
+    container_name: ps_ml
+    networks:
+      - ps-network
+    deploy:
+      restart_policy:
+        condition: on-failure
+
   nginx:
     image: ps_nginx
     build:
