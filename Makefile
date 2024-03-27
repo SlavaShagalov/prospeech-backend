@@ -16,28 +16,27 @@ build:
 .PHONY: deploy
 deploy:
 	cd ../prospeech-frontend && pwd && git pull
-	cd  ../prospeech-backend
 	git pull
 	make prod-stop
 	make prod-up
 
 .PHONY: dev-up
 dev-up:
-	docker compose -f docker-compose.yml up -d --build db redis api nginx
+	docker compose -f docker-compose.yml up -d --build db redis api ml nginx
 
 .PHONY: dev-stop
 dev-stop:
-	docker compose -f docker-compose.yml stop db redis api nginx
+	docker compose -f docker-compose.yml stop db redis api ml nginx
 
 .PHONY: prod-up
 prod-up:
 	cp -r ../prospeech-frontend ./frontend
-	docker compose -f docker-compose-prod.yml up -d --build db redis api nginx
+	docker compose -f docker-compose-prod.yml up -d --build db redis api ml nginx
 	rm -rf frontend
 
 .PHONY: prod-stop
 prod-stop:
-	docker compose -f docker-compose-prod.yml stop db redis api nginx
+	docker compose -f docker-compose-prod.yml stop
 
 # ===== LOGS =====
 

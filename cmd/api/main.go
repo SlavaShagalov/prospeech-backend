@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/SlavaShagalov/prospeech-backend/internal/ml"
 	"github.com/SlavaShagalov/prospeech-backend/internal/pkg/config"
 	"github.com/SlavaShagalov/prospeech-backend/internal/pkg/storages/postgres"
 	"github.com/gorilla/mux"
@@ -108,10 +109,13 @@ func main() {
 	audiosRepo := audiosRepository.New(pgxPool, logger)
 	sessionsRepo := sessionsRepository.New(redisClient, logger)
 
+	// ===== External Services =====
+	mlService := ml.New(logger)
+
 	// ===== Usecases =====
 	authUC := authUsecase.New(usersRepo, sessionsRepo, hasher, logger)
 	usersUC := usersUsecase.New(usersRepo, filesRepo)
-	audiosUC := audiosUsecase.New(audiosRepo, filesRepo, usersRepo)
+	audiosUC := audiosUsecase.New(audiosRepo, filesRepo, usersRepo, mlService, logger)
 
 	// ===== Middleware =====
 	checkAuth := mw.NewCheckAuth(authUC, logger)

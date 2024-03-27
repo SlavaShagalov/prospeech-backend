@@ -7,14 +7,15 @@ import (
 )
 
 type CreateParams struct {
-	UserID     int64
-	Title      string
-	URL        string
-	Text       string
-	Words      []string
-	StartTimes []float64
-	EndTimes   []float64
-	Duration   time.Duration
+	UserID      int64
+	Title       string
+	URL         string
+	Text        string
+	Words       []string
+	StartTimes  []float64
+	EndTimes    []float64
+	WordsPerMin uint
+	Duration    time.Duration
 }
 
 type PartialUpdateParams struct {

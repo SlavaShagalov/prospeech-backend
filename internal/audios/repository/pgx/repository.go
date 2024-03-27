@@ -27,11 +27,9 @@ func New(pool *pgxpool.Pool, log *zap.Logger) pAudiosRepo.Repository {
 }
 
 const createCmd = `
-	INSERT INTO audios (user_id, title, URL, text) 
-	VALUES ($1, $2, $3, $4)
-	RETURNING id, user_id, title, URL, text, created_at, updated_at;`
-
-//-- 	RETURNING id, user_id, title, URL, text, words, start_times, end_times, duration, created_at, updated_at;`
+	INSERT INTO audios (user_id, title, URL, text, words, start_times, end_times, words_per_min) 
+	VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+	RETURNING id, user_id, title, URL, text, words, start_times, end_times, words_per_min, created_at, updated_at;`
 
 func (repo *repository) Create(ctx context.Context, params *pAudiosRepo.CreateParams) (*models.Audio, error) {
 	row := repo.pool.QueryRow(ctx, createCmd,
@@ -39,14 +37,26 @@ func (repo *repository) Create(ctx context.Context, params *pAudiosRepo.CreatePa
 		params.Title,
 		params.URL,
 		params.Text,
-		//params.Words,
-		//params.StartTimes,
-		//params.EndTimes,
-		//params.Duration,
+		params.Words,
+		params.StartTimes,
+		params.EndTimes,
+		params.WordsPerMin,
 	)
 
 	audio := new(models.Audio)
-	err := scanAudio(row, audio)
+	err := row.Scan(
+		&audio.ID,
+		&audio.UserID,
+		&audio.Title,
+		&audio.URL,
+		&audio.Text,
+		&audio.Words,
+		&audio.StartTimes,
+		&audio.EndTimes,
+		&audio.WordsPerMin,
+		&audio.CreatedAt,
+		&audio.UpdatedAt,
+	)
 	if err != nil {
 		pgErr, ok := err.(*pq.Error)
 		if !ok {
@@ -102,7 +112,7 @@ func (repo *repository) List(ctx context.Context, userID int64) ([]models.Audio,
 }
 
 const getCmd = `
-	SELECT id, user_id, title, url, text, created_at, updated_at
+	SELECT id, user_id, title, URL, text, words, start_times, end_times, words_per_min, created_at, updated_at
 	FROM audios
 	WHERE id = $1;`
 
@@ -110,7 +120,19 @@ func (repo *repository) Get(ctx context.Context, id int64) (*models.Audio, error
 	row := repo.pool.QueryRow(ctx, getCmd, id)
 
 	audio := new(models.Audio)
-	err := scanAudio(row, audio)
+	err := row.Scan(
+		&audio.ID,
+		&audio.UserID,
+		&audio.Title,
+		&audio.URL,
+		&audio.Text,
+		&audio.Words,
+		&audio.StartTimes,
+		&audio.EndTimes,
+		&audio.WordsPerMin,
+		&audio.CreatedAt,
+		&audio.UpdatedAt,
+	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, errors.Wrap(pErrors.ErrAudioNotFound, err.Error())

@@ -7,14 +7,14 @@ import (
 	audiosRepo "github.com/SlavaShagalov/prospeech-backend/internal/audios/repository"
 	"github.com/SlavaShagalov/prospeech-backend/internal/files"
 	pFiles "github.com/SlavaShagalov/prospeech-backend/internal/files"
+	"github.com/SlavaShagalov/prospeech-backend/internal/ml"
 	"github.com/SlavaShagalov/prospeech-backend/internal/models"
+	"github.com/SlavaShagalov/prospeech-backend/internal/pkg/convert"
 	"github.com/SlavaShagalov/prospeech-backend/internal/users"
 	"github.com/google/uuid"
-	"log"
-	"os/exec"
+	"go.uber.org/zap"
 	"path/filepath"
 	"strconv"
-	"time"
 )
 
 const (
@@ -25,35 +25,18 @@ type usecase struct {
 	repo      repository.Repository
 	filesRepo files.Repository
 	usersRepo users.Repository
+	mlServ    *ml.Service
+	log       *zap.Logger
 }
 
-func New(repo repository.Repository, filesRepo files.Repository, usersRepo users.Repository) pAudios.Usecase {
+func New(repo repository.Repository, filesRepo files.Repository, usersRepo users.Repository, mlServ *ml.Service, log *zap.Logger) pAudios.Usecase {
 	return &usecase{
 		repo:      repo,
 		filesRepo: filesRepo,
 		usersRepo: usersRepo,
+		mlServ:    mlServ,
+		log:       log,
 	}
-}
-
-func runML(filename string) {
-	cmd := exec.Command("python3", "/bin/ml/main.py", filename)
-	if err := cmd.Run(); err != nil {
-		log.Fatal(err)
-		return
-	}
-}
-
-type Data struct {
-	Words      []string      `json:"words"`
-	StartTimes []float64     `json:"start_times"`
-	EndTimes   []float64     `json:"end_times"`
-	Duration   time.Duration `json:"duration"`
-}
-
-func analyze(file *pFiles.File) (string, error) {
-	log.Println("Start processing " + file.Name)
-	log.Println("End processing " + file.Name)
-	return "Hello from ML!", nil
 }
 
 func (uc *usecase) Create(ctx context.Context, params *pAudios.CreateParams) (*models.Audio, error) {
@@ -66,29 +49,16 @@ func (uc *usecase) Create(ctx context.Context, params *pAudios.CreateParams) (*m
 		return nil, err
 	}
 
-	text, err := analyze(&params.File)
+	wavData, err := convert.MP4ToWAV(params.File.Data)
 	if err != nil {
+		uc.log.Error("Failed to convert MP4 to WAV", zap.Error(err))
 		return nil, err
 	}
 
-	//var data Data
-	//err = os.WriteFile("/data/speech."+filepath.Ext(params.File.Name), params.File.Data, 0777)
-	//if err != nil {
-	//	fmt.Println("Ошибка при записи в файл:", err)
-	//} else {
-	//	runML("/data/speech." + filepath.Ext(params.File.Name))
-	//
-	//	file, err := os.Open("/data/speech.json")
-	//	if err != nil {
-	//		fmt.Println(err)
-	//	}
-	//	defer file.Close()
-	//
-	//	err = json.NewDecoder(file).Decode(&data)
-	//	if err != nil {
-	//		fmt.Println(err)
-	//	}
-	//}
+	mlData, err := uc.mlServ.Wav2Vec(wavData)
+	if err != nil {
+		return nil, err
+	}
 
 	title := "Выступление"
 	curCount, err := uc.usersRepo.UpdateUntitledSpeechesCount(ctx, params.UserID)
@@ -97,10 +67,13 @@ func (uc *usecase) Create(ctx context.Context, params *pAudios.CreateParams) (*m
 	}
 
 	repoParams := audiosRepo.CreateParams{
-		UserID: params.UserID,
-		Title:  title,
-		URL:    url,
-		Text:   text,
+		UserID:      params.UserID,
+		Title:       title,
+		URL:         url,
+		Words:       mlData.Words,
+		StartTimes:  mlData.StartTimes,
+		EndTimes:    mlData.EndTimes,
+		WordsPerMin: mlData.WordsPerMin,
 	}
 	audio, err := uc.repo.Create(ctx, &repoParams)
 	return audio, err
