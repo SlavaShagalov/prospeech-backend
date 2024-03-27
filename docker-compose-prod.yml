@@ -4,7 +4,7 @@ services:
   # ===== Storages =====
 
   db:
-    image: postgres
+    image: postgres:alpine3.19
     container_name: ps_db
     restart: always
     environment:
@@ -40,7 +40,7 @@ services:
     image: ps_api
     build:
       context: .
-      dockerfile: ./cmd/api/Dockerfile
+      dockerfile: ./cmd/api/Dockerfile.prod
     container_name: ps_api
     depends_on:
       - db

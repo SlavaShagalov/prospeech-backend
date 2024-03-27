@@ -15,7 +15,7 @@ build:
 
 .PHONY: deploy
 deploy:
-	cd ../prospeech-frontend && pwd && git pull
+	cd ../prospeech-frontend && git pull
 	git pull
 	make prod-stop
 	make prod-up
