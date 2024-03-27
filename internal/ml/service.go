@@ -10,7 +10,8 @@ import (
 )
 
 const (
-	wav2VecUrl = "http://ml:8080/predictions/Wav2Vec2"
+	wav2VecUrl     = "http://ml:8080/predictions/Wav2Vec2"
+	improveTextUrl = "http://ml:8080/predictions/Seq2Seq"
 )
 
 type Service struct {
@@ -60,4 +61,35 @@ func (s *Service) Wav2Vec(wavData []byte) (*Data, error) {
 	}
 
 	return result, nil
+}
+
+func (s *Service) ImproveText(badText string) (string, error) {
+	client := &http.Client{}
+	req, err := http.NewRequest(http.MethodPost, improveTextUrl, bytes.NewBuffer([]byte(badText)))
+	if err != nil {
+		s.log.Error("ImproveText: failed to create HTTP request", zap.Error(err))
+		return "", err
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		s.log.Error("ImproveText: request failed", zap.Error(err))
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		s.log.Error(constants.FailedReadRequestBody, zap.Error(err))
+		return "", err
+	}
+
+	var result map[string][]string
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		s.log.Error(constants.FailedMarshalBody, zap.Error(err))
+		return "", err
+	}
+
+	return result["transcription"][0], nil
 }

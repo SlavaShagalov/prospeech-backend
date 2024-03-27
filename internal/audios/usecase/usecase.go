@@ -15,6 +15,7 @@ import (
 	"go.uber.org/zap"
 	"path/filepath"
 	"strconv"
+	"strings"
 )
 
 const (
@@ -60,6 +61,12 @@ func (uc *usecase) Create(ctx context.Context, params *pAudios.CreateParams) (*m
 		return nil, err
 	}
 
+	badText := strings.Join(mlData.Words, " ")
+	improvedText, err := uc.mlServ.ImproveText(badText)
+	if err != nil {
+		return nil, err
+	}
+
 	title := "Выступление"
 	curCount, err := uc.usersRepo.UpdateUntitledSpeechesCount(ctx, params.UserID)
 	if err == nil {
@@ -70,6 +77,7 @@ func (uc *usecase) Create(ctx context.Context, params *pAudios.CreateParams) (*m
 		UserID:      params.UserID,
 		Title:       title,
 		URL:         url,
+		Text:        improvedText,
 		Words:       mlData.Words,
 		StartTimes:  mlData.StartTimes,
 		EndTimes:    mlData.EndTimes,

@@ -11,7 +11,7 @@ down:
 
 .PHONY: build
 build:
-	docker compose -f docker-compose.yml build api
+	docker compose -f docker-compose-prod.yml build api
 
 .PHONY: deploy
 deploy:
